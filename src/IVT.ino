@@ -233,7 +233,7 @@ void setup()
 	Particle.subscribe("house/climate", updateTemperature, MY_DEVICES);
 
 	Blynk.begin(BLYNK_AUTH_TOKEN);
-	timer.setInterval(60000L, publishSensors); //1 min
+	timer.setInterval(20000L, publishSensors); //20 seconds
 	timer.setInterval(120000L, operateHeater); //2 mins
 
 	//Initialize the relay pin and make sure it is low
@@ -432,7 +432,8 @@ void publishSensors()
 	//Carrier In
 	Blynk.virtualWrite(V102, t9_temp);
 	//Fan or compressor
-	Blynk.virtualWrite(V103, (compressor == 1 || heater_fan == 1) ? 1 : 0);
+	//Blynk.virtualWrite(V103, (compressor == 1 || heater_fan == 1) ? 1 : 0);
+	Blynk.virtualWrite(V103, compressor);
 	//Immersion heater
 	Blynk.virtualWrite(V104, immersionHeater);
 	//Heater state
@@ -441,6 +442,16 @@ void publishSensors()
 	Blynk.virtualWrite(V108, heaterStateString);
 	//Current outdoor temperature
 	Blynk.virtualWrite(V109, current_outdoor_temp);
+
+	String json = "{\"compressor_on\": " + String(compressor) + ", " +
+					"\"immersion_heater_on\": " + String(immersionHeater) + ", " +
+					"\"fan_on\": " + String(heater_fan) + ", " +
+					"\"heater_state\": " + String(heaterState) + ", " +
+					"\"floor_water_temp\": " + String(t1_temp) + ", " +
+					"\"outdoor_temp\": " + String(current_outdoor_temp) + ", " +
+					"\"indoor_temp\": " + String(current_indoor_temp) + " }";
+
+	Particle.publish(event_prefix + "data", json, PRIVATE);
 }
 
 void loop()
@@ -509,7 +520,7 @@ void loop()
 	}
 }
 
-static float lookupTemp(uint8_t data[8])
+float lookupTemp(uint8_t data[8])
 {
 	int adVal = getDecimalValue(data[0], data[1]);
 	if (adVal > 1023)
