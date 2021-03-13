@@ -222,7 +222,7 @@ void setup()
 	Particle.variable("indoor_temp", current_indoor_temp_string);
 
 	delay(5000);   // Allow board to settle
-	Time.zone(+1); // Set to correct time zone
+	Time.zone(+2); // Set to correct time zone
 
 	can.begin(125000);
 	if (can.errorStatus() == CAN_BUS_OFF)
